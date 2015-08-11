@@ -1,4 +1,5 @@
-from numpy import *  
+from numpy import * 
+
 def loadDataSet(filename):  
     dataMat = []  
     fr = open(filename)  
@@ -8,12 +9,16 @@ def loadDataSet(filename):
         dataMat.append(fltLine)  
     fr.close()  
     return dataMat  
+    
 def regLeaf(dataSet):  
     return mean(dataSet[:,-1])  
+    
 def regErr(dataSet):  
     return var(dataSet[:,-1])*shape(dataSet)[0]  
+    
 def regTreeEval(model, inDat):  
     return float(model)  
+    
 def linearSolve(dataSet):  
     m,n=shape(dataSet)  
     X = mat(ones((m,n)))  
@@ -26,18 +31,22 @@ def linearSolve(dataSet):
                try increasing the second value of ops')  
     ws = xTx.T*(X.T*Y)  
     return ws, X, Y  
+    
 def modelLeaf(dataSet):  
     ws, X, Y = linearSolve(dataSet)  
     return ws  
+    
 def modelErr(dataSet):  
     ws,X,Y = linearSolve(dataSet)  
     yHat = X*ws  
-    return sum(power(Y-yHat,2))  
+    return sum(power(Y-yHat,2)) 
+    
 def modelTreeEval(model, inDat):  
     n=shape(inDat)[1]  
     X = mat(ones((1,n+1)))  
     X[:,1:n+1]=inDat  
     return float(X*model)  
+    
 def chooseBestSplit(dataSet, leafType=regLeaf, errType=regErr, ops=(1,4)):  
     tolS = ops[0]  
     tolN = ops[1]  
@@ -65,10 +74,12 @@ def chooseBestSplit(dataSet, leafType=regLeaf, errType=regErr, ops=(1,4)):
         print "Not enough nums"  
         return None, leafType(dataSet)  
     return bestIndex, bestValue  
+    
 def binSplitDataSet(dataSet, feature, value):  
     mat0 = dataSet[nonzero(dataSet[:, feature]>value)[0],:][0]  
     mat1 = dataSet[nonzero(dataSet[:, feature]<=value)[0],:][0]  
     return mat0, mat1  
+    
 def createTree(dataSet, leafType=regLeaf, errType=regErr, ops=(1,4)):  
     feat, val = chooseBestSplit(dataSet, leafType, errType, ops)  
     if feat == None:  
@@ -80,14 +91,17 @@ def createTree(dataSet, leafType=regLeaf, errType=regErr, ops=(1,4)):
     retTree['left']=createTree(lSet, leafType, errType, ops)  
     retTree['right']=createTree(rSet, leafType, errType, ops)  
     return retTree  
+    
 def isTree(obj):  
     return (type(obj).__name__=='dict')  
+    
 def getMean(tree):  
     if isTree(tree['right']):  
         tree['right'] = getMean(tree['right'])  
     if isTree(tree['left']):  
         tree['left'] = getMean(tree['left'])  
     return (tree['left']+tree['right'])/2.0  
+    
 def prune(tree, testData):  
     if shape(testData)[0] == 0:  
         return getMean(tree)  
@@ -110,6 +124,7 @@ def prune(tree, testData):
             return tree  
     else:  
         return tree  
+        
 def treeForeCast(tree, inData, modelEval=regTreeEval):  
     if not isTree(tree):  
         return modelEval(tree, inData)  
@@ -123,6 +138,7 @@ def treeForeCast(tree, inData, modelEval=regTreeEval):
             return treeForeCast(tree['right'], inData, modelEval)  
         else:  
             return modelEval(tree['right'], inData)  
+            
 def createForeCast(tree, testData, modelEval=regTreeEval):  
     m=len(testData)  
     yHat = mat(zeros((m,1)))  
